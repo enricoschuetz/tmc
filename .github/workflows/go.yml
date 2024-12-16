@@ -1,0 +1,133 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+env:
+  FILENAME_PREFIX: ${{ github.event.repository.name }}
+  GOOS_GARCH_TARGETS: "linux,amd64;darwin,amd64;darwin,arm64;windows,amd64;windows,arm64"
+  OPENAPI_SPEC: ./api/tm-catalog.openapi.yaml
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "main" ]
+  create:
+    tags:
+      - 'v*.*.*'
+      
+jobs:
+  openapi-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    container:
+      image: stoplight/spectral:6.11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run spectral linting
+        run: |
+          echo 'extends: ["spectral:oas"]' > .spectral.yaml
+          spectral lint ${OPENAPI_SPEC}
+          
+
+  build:
+    needs: openapi-lint
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Check Golang imports order and formatting
+      uses: Jerome1337/goimports-action@v1.0.3
+
+    - name: Test
+      run: CGO_ENABLED=0 go test -v ./...
+
+    - name: Compile
+      run: |
+        echo "FILE_NAME ${FILENAME_PREFIX}"
+        export FILENAME_PREFIX=${FILENAME_PREFIX}
+        export TMC_VERSION=$(git describe --tags --always)   
+        echo "TMC_VERSION ${TMC_VERSION}"       
+        bash ./build/compile.sh
+
+    - name: List-Dependencies
+      run: |
+        export FILENAME_PREFIX=${FILENAME_PREFIX}
+        bash ./build/list-dependencies.sh
+
+    - name: Release-Notes
+      if: startsWith(github.ref, 'refs/tags')
+      run: |
+        echo "Extracting release notes for version ${{github.ref}}"
+        export VERSION=${{github.ref_name}}
+        bash build/extract-release-notes.sh >> release-notes.md
+
+    - name: set-prerelease-flag
+      run: |
+        if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-rc.*$ ]]; then
+          echo "prerelease=true" >> $GITHUB_ENV
+        else
+          echo "prerelease=false" >> $GITHUB_ENV
+        fi
+
+    - name: Release
+      if: startsWith(github.ref, 'refs/tags')
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: release-notes.md
+        files: ${{ env.FILENAME_PREFIX }}*
+        token: ${{ secrets.GITHUB_TOKEN }}
+        prerelease: ${{ env.prerelease }}
+
+  docker:
+    if: startsWith(github.ref, 'refs/tags') 
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+      
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+  
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
