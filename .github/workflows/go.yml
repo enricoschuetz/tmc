@@ -67,25 +67,29 @@ jobs:
         export FILENAME_PREFIX=${FILENAME_PREFIX}
         bash ./build/list-dependencies.sh
 
-    - name: set-prerelease-flag
+    - name: Get-Release-Type
+      id: getReleaseType
       run: |
-        if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-rc.*$ ]]; then
+        if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "releaseType=1" >> $GITHUB_ENV
           echo "prerelease=true" >> $GITHUB_ENV
+       if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-rc.*$ ]]; then
+          echo "releaseType=2" >> $GITHUB_ENV
+          echo "prerelease=true" >> $GITHUB_ENV          
         else
+          echo "releaseType=0" >> $GITHUB_ENV
           echo "prerelease=false" >> $GITHUB_ENV
-        fi
-        
-        
+        fi 
 
-    - name: Release-Notes ${{ env.prerelease }}
-      if: ${{ startsWith(github.ref, 'refs/tags') && env.prerelease == false }}
+    - name: Release-Notes
+      if: ${{ env.releaseType }} == 1
       run: |
         echo "Extracting release notes for version ${{github.ref}}"
         export VERSION=${{github.ref_name}}
         bash build/extract-release-notes.sh >> release-notes.md
 
     - name: Release
-      if: startsWith(github.ref, 'refs/tags')
+      if: ${{ env.releaseType }} > 1
       uses: softprops/action-gh-release@v1
       with:
         body_path: release-notes.md
@@ -94,7 +98,7 @@ jobs:
         prerelease: ${{ env.prerelease }}
 
   docker:
-    if: startsWith(github.ref, 'refs/tags') 
+    if: ${{ env.releaseType }} > 1
     needs: build
     runs-on: ubuntu-latest
 
