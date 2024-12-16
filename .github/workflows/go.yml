@@ -74,9 +74,11 @@ jobs:
         else
           echo "prerelease=false" >> $GITHUB_ENV
         fi
+        
+        
 
     - name: Release-Notes ${{ env.prerelease }}
-      if: startsWith(github.ref, 'refs/tags') && ${{ env.prerelease }} == false
+      if: (startsWith(github.ref, 'refs/tags') && ${{ env.prerelease }} == false)
       run: |
         echo "Extracting release notes for version ${{github.ref}}"
         export VERSION=${{github.ref_name}}
