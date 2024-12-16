@@ -98,7 +98,7 @@ jobs:
         prerelease: ${{ env.prerelease }}
 
   docker:
-    if: ${{ env.releaseType }} > 1
+    if: startsWith(github.ref, 'refs/tags')
     needs: build
     runs-on: ubuntu-latest
 
