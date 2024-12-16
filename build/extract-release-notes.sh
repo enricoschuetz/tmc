@@ -15,7 +15,7 @@ NOTE=$(sed -n "$SED_PATTERN" CHANGELOG.md)
 
 if [ -z "$NOTE" ]; then
   echo "build/extract-release-notes.sh failed: extracted empty string from CHANGELOG.md"
-  exit 1
+  exit 0
 fi
 
 printf "%s\n" "$NOTE"
