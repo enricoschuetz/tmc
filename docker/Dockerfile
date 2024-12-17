@@ -1,5 +1,7 @@
 FROM alpine:latest
 
+ARG VERSION
+
 # externally configurable environment variables
 # either set default here or set with docker run option -e
 ENV TMC_URLCONTEXTROOT=
@@ -8,8 +10,6 @@ ENV TMC_CORSALLOWEDORIGINS=
 ENV TMC_CORSALLOWEDHEADERS=
 ENV TMC_CORSALLOWCREDENTIALS=
 ENV TMC_CORSMAXAGE=86500
-
-ARG VERSION
 
 LABEL name="W3C Thing Model Catalog" \
       maintainer="https://github.com/wot-oss" \
@@ -24,7 +24,7 @@ RUN apk update \
 
 WORKDIR $WORKDIR 
 
-# fetch the latest tmc for linux
+# fetch the tmc by the given version for linux
 COPY ./docker/download-cli.sh .
 RUN export VERSION=$VERSION
 RUN ./download-cli.sh; rm ./download-cli.sh
