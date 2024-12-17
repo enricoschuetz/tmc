@@ -82,7 +82,7 @@ jobs:
 #      if: startsWith(github.ref, 'refs/tags')
       run: |
          echo "${{ steps.getReleaseType.outputs.prerelease }}"
-         echo "${{ !steps.getReleaseType.outputs.prerelease }}"
+         echo "!${{ steps.getReleaseType.outputs.prerelease }}"
          echo "${{ steps.getReleaseType.outputs.prerelease }} == true"
 #        echo "Extracting release notes for version ${{github.ref}}"
 #        export VERSION=${{github.ref_name}}
