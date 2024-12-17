@@ -76,12 +76,12 @@ jobs:
          echo "prerelease=false" >> $GITHUB_ENV
         fi 
 
-    - name: Release-Notes
-      if: startsWith(github.ref, 'refs/tags')
-      run: |
-        echo "Extracting release notes for version ${{github.ref}}"
-        export VERSION=${{github.ref_name}}
-        bash build/extract-release-notes.sh >> release-notes.md
+#    - name: Release-Notes
+#      if: startsWith(github.ref, 'refs/tags')
+#      run: |
+#        echo "Extracting release notes for version ${{github.ref}}"
+#        export VERSION=${{github.ref_name}}
+#        bash build/extract-release-notes.sh >> release-notes.md
 
     - name: Release
       if: startsWith(github.ref, 'refs/tags')
@@ -123,6 +123,11 @@ jobs:
 
       - name: Set up docker buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Version
+        if: startsWith(github.ref, 'refs/tags')
+        run: |
+         export VERSION=${{github.ref_name}}
 
       - name: Build and push Docker images
         uses: docker/build-push-action@v5
