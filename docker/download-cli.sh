@@ -1,5 +1,10 @@
 #! /bin/sh
 
+
+# Parameter to this script, which is usually explicitly set in the pipeline:
+#
+# VERSION: version of the tmc CLI to download
+
 if [ -z "$VERSION" ]; then
   echo "download CLI failed: \$VERSION env var empty."
   exit 1
