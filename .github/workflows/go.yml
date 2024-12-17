@@ -79,14 +79,14 @@ jobs:
         fi 
 
     - name: Release-Notes
-#      if: startsWith(github.ref, 'refs/tags')
+      if: startsWith(github.ref, 'refs/tags')
       run: |
-         echo "${{ steps.getReleaseType.outputs.prerelease }}"
-         echo "!${{ steps.getReleaseType.outputs.prerelease }}"
-         echo "${{ steps.getReleaseType.outputs.prerelease }} == true"
-#        echo "Extracting release notes for version ${{github.ref}}"
-#        export VERSION=${{github.ref_name}}
-#        bash build/extract-release-notes.sh >> release-notes.md
+         if [ ${{ steps.getReleaseType.outputs.prerelease }} = false ]; then
+           export NOTE_REQUIRED=true
+         fi
+         echo "Extracting release notes for version ${{github.ref}}"
+         export VERSION=${{github.ref_name}}
+         bash build/extract-release-notes.sh >> release-notes.md
 
     - name: Release
       if: startsWith(github.ref, 'refs/tags')
