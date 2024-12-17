@@ -1,10 +1,10 @@
 # Change Log
 
-## [unreleased]
+## [v0.3.0-rc.1]
 
 ### Added
 
-- `copy`: added flag `--ignore-existing` to ignore TMs and attachments that have conflicts with existing ones instead of returning an error code
+- `xcopy`: added flag `--ignore-existing` to ignore TMs and attachments that have conflicts with existing ones instead of returning an error code
 - Added possibility to import file attachments to TMs and TM names
 - `export`: added flag to export attachments together with TMs
 - added setting/storing/detecting of attachment media types
