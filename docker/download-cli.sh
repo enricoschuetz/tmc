@@ -1,5 +1,7 @@
 #! /bin/sh
 
+echo "download CLI for version $VERSION"
+
 if [ -z "$VERSION" ]; then
   echo "docker failed: \$VERSION env var empty."
   exit 1
