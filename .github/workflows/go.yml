@@ -136,5 +136,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           push: true
+          build-args: |
+            "VERSION=${{ VERSION }}"
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

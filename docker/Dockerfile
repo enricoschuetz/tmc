@@ -9,6 +9,8 @@ ENV TMC_CORSALLOWEDHEADERS=
 ENV TMC_CORSALLOWCREDENTIALS=
 ENV TMC_CORSMAXAGE=86500
 
+ARG VERSION
+
 LABEL name="W3C Thing Model Catalog" \
       maintainer="https://github.com/wot-oss" \
       version=${VERSION} \
@@ -24,6 +26,7 @@ WORKDIR $WORKDIR
 
 # fetch the latest tmc for linux
 COPY ./docker/download-cli.sh .
+RUN export VERSION=$VERSION
 RUN ./download-cli.sh; rm ./download-cli.sh
 RUN chmod 755 ./tmc; mv ./tmc /usr/bin;
 
