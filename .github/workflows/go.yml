@@ -79,7 +79,7 @@ jobs:
         fi 
 
     - name: Release-Notes
-      if: startsWith(github.ref, 'refs/tags')
+#      if: startsWith(github.ref, 'refs/tags')
       run: |
          echo "${{ steps.getReleaseType.outputs.prerelease }}"
          echo "${{ !steps.getReleaseType.outputs.prerelease }}"
