@@ -12,12 +12,12 @@ on:
   push:
     branches: [ "*" ]
     tags:
-      - 'v*.*.*'
+      - v*.*.*
   pull_request:
     branches: [ "main" ]
   create:
     tags:
-      - 'v*.*.*'
+      - v*.*.*
       
 jobs:
   openapi-lint:
